@@ -1,37 +1,77 @@
-import * as React from "react";
+// src/components/ui/dialog.tsx
+"use client"
 
-// Define DialogProps with correct types
-export interface DialogProps {
-  isOpen: boolean; // boolean to represent if the dialog is open or not
-  onClose: () => void; // function to close the dialog
-  children: React.ReactNode; // Define children as React.ReactNode to accept any valid React content
+import * as React from "react"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { X } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const Dialog = DialogPrimitive.Root
+
+const DialogTrigger = DialogPrimitive.Trigger
+
+const DialogPortal = ({ children }: { children: React.ReactNode }) => (
+  <DialogPrimitive.Portal>{children}</DialogPrimitive.Portal>
+)
+
+DialogPortal.displayName = DialogPrimitive.Portal.displayName
+
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn("fixed inset-0 z-50 bg-black/50 backdrop-blur-sm", className)}
+    {...props}
+  />
+))
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
+
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-md bg-white p-6 shadow-lg dark:bg-gray-900",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <DialogPrimitive.Close className="absolute right-4 top-4">
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
+DialogContent.displayName = DialogPrimitive.Content.displayName
+
+const DialogHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="mb-4">{children}</div>
+)
+DialogHeader.displayName = "DialogHeader"
+
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn("text-lg font-medium text-gray-900 dark:text-gray-100", className)}
+    {...props}
+  />
+))
+DialogTitle.displayName = DialogPrimitive.Title.displayName
+
+export {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 }
-
-// Main Dialog component
-export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null; // Return nothing if the dialog is closed
-
-  return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white rounded-md p-6">
-        {children}
-        <button onClick={onClose}>Close</button>
-      </div>
-    </div>
-  );
-};
-
-// DialogContent component
-export const DialogContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <div>{children}</div>;
-};
-
-// DialogHeader component
-export const DialogHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <div className="text-xl font-bold">{children}</div>;
-};
-
-// DialogTitle component
-export const DialogTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <h3 className="text-2xl">{children}</h3>;
-};
